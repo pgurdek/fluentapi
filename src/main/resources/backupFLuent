@@ -1,0 +1,98 @@
+package fluentconditionals;
+
+import java.util.function.Supplier;
+
+public class FluentConditionals<T> {
+
+    private boolean condition;
+
+    public static Runnable doNothing  = () -> {};
+    private T returnValue = null;
+
+    public FluentConditionals(final boolean condition) {
+        this.condition = condition;
+    }
+
+    public FluentConditionals(final boolean condition, T returnValue) {
+        this.condition = condition;
+        this.returnValue = returnValue;
+    }
+
+    public static FluentConditionals<?> when(boolean condition){
+        return new FluentConditionals<>(condition);
+    }
+
+    public static FluentConditionals<?> when(PredicateWithOutArgs predicate){
+        return new FluentConditionals<>(predicate.test());
+    }
+
+    public FluentConditionals then(Runnable runnable){
+        if(condition){
+            runnable.run();
+        }
+        return this;
+    }
+
+    public <T> FluentConditionals<T> thenReturn(Supplier<T> supplierInt){
+        if(condition){
+            return new FluentConditionals<>(condition,supplierInt.get());
+        }
+        T empty = null;
+        return new FluentConditionals<>(condition,empty);
+    }
+
+    public <T> FluentConditionals<T> thenReturn(T value){
+        if(condition){
+            return new FluentConditionals<>(condition,value);
+        }
+        T empty = null;
+        return new FluentConditionals<>(condition,empty);
+    }
+
+
+    public void orElse(Runnable runnable){
+        if(!condition){
+            runnable.run();
+        }
+    }
+
+    public T orElse(T value ){
+        if(!condition){
+            returnValue = value;
+        }
+        return returnValue;
+    }
+
+    public T orElse(Supplier<T> supplier){
+        if(!condition){
+            returnValue = supplier.get();
+        }
+        return returnValue;
+    }
+
+
+    public void orElseThrowE(RuntimeException runTimeException){
+        if(!condition){
+            throw runTimeException;
+        }
+    }
+
+    public T orElseThrow(Supplier<RuntimeException> supplier){
+        if(!condition){
+            throw supplier.get();
+        }
+        return returnValue;
+    }
+
+    public T orElseThrow(RuntimeException runtTimeException){
+        if(!condition){
+            throw runtTimeException;
+        }
+        return returnValue;
+    }
+
+    @FunctionalInterface
+    public interface PredicateWithOutArgs {
+      boolean  test();
+    }
+}
